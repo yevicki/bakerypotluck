@@ -1,1 +1,1 @@
-yevicki.github.io/bakerypotluck
+[yevicki.github.io/bakerypotluck](https://yevicki.github.io/bakerypotluck/)
