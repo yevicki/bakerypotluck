@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bakery Potluck 🍵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --matcha-deep: #2d4a2d;
+    --matcha-mid: #4a7c59;
+    --matcha-soft: #7aab7a;
+    --matcha-pale: #c8dfc0;
+    --matcha-cream: #f5f0e8;
+    --matcha-dust: #e8f0e0;
+    --blush: #f2d0c4;
+    --gold: #c9a96e;
+    --text-dark: #1e2e1e;
+    --text-mid: #3d5c3d;
+    --text-light: #6b8f6b;
+    --white: #fffef9;
+    --radius: 16px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--matcha-cream);
+    min-height: 100vh;
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  /* ─── BACKGROUNDS & TEXTURES ─── */
+  .bg-organic {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 10% 20%, rgba(122,171,122,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 90% 80%, rgba(200,223,192,0.25) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(242,208,196,0.12) 0%, transparent 70%);
+  }
+
+  /* ─── PAGES ─── */
+  .page { display: none; position: relative; z-index: 1; }
+  .page.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ─── CARD ─── */
+  .card {
+    background: rgba(255,254,249,0.88);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(201,169,110,0.25);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 32px rgba(45,74,45,0.10), 0 1px 4px rgba(45,74,45,0.06);
+  }
+
+  /* ─── LOCK PAGE ─── */
+  #page-lock {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--matcha-deep);
+  }
+
+  .lock-bg {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 20% 30%, rgba(74,124,89,0.5) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 70% at 80% 70%, rgba(45,74,45,0.8) 0%, transparent 60%),
+      var(--matcha-deep);
+    z-index: 0;
+  }
+
+  .lock-card {
+    position: relative; z-index: 1;
+    background: rgba(255,254,249,0.06);
+    border: 1px solid rgba(201,169,110,0.3);
+    border-radius: 24px;
+    padding: 56px 48px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 64px rgba(0,0,0,0.3);
+  }
+
+  .lock-leaf {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+    animation: gentle-float 3s ease-in-out infinite;
+  }
+
+  @keyframes gentle-float {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+  }
+
+  .lock-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--matcha-cream);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .lock-subtitle {
+    font-size: 13px;
+    color: rgba(200,223,192,0.6);
+    margin-bottom: 36px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .lock-input {
+    width: 100%;
+    background: rgba(255,254,249,0.08);
+    border: 1px solid rgba(201,169,110,0.3);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--matcha-cream);
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 3px;
+    text-align: center;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, background 0.2s;
+    outline: none;
+  }
+
+  .lock-input::placeholder { letter-spacing: 1px; color: rgba(200,223,192,0.4); }
+  .lock-input:focus { border-color: var(--gold); background: rgba(255,254,249,0.12); }
+
+  .lock-error {
+    color: #f2a0a0;
+    font-size: 13px;
+    margin-bottom: 12px;
+    min-height: 18px;
+    transition: opacity 0.2s;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 100px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--white);
+    width: 100%;
+    box-shadow: 0 4px 16px rgba(201,169,110,0.3);
+  }
+  .btn-primary:hover { background: #b8924e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,169,110,0.4); }
+
+  .btn-matcha {
+    background: var(--matcha-mid);
+    color: var(--white);
+    box-shadow: 0 4px 16px rgba(74,124,89,0.25);
+  }
+  .btn-matcha:hover { background: var(--matcha-deep); transform: translateY(-1px); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--matcha-mid);
+    color: var(--matcha-mid);
+  }
+  .btn-outline:hover { background: var(--matcha-dust); }
+
+  .btn-danger {
+    background: transparent;
+    border: 1.5px solid #d9534f;
+    color: #d9534f;
+  }
+  .btn-danger:hover { background: #fdf0f0; }
+
+  /* ─── INVITE / MAIN PAGE ─── */
+  #page-invite {
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    gap: 0;
+  }
+
+  .invite-wrapper {
+    max-width: 480px;
+    width: 100%;
+  }
+
+  .invite-top-deco {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-bottom: 32px;
+    opacity: 0.6;
+  }
+  .deco-line { flex: 1; height: 1px; background: var(--matcha-soft); }
+
+  .event-chip {
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--matcha-mid);
+    font-weight: 500;
+  }
+
+  .invite-card {
+    padding: 48px 40px;
+    text-align: center;
+  }
+
+  .invite-emoji { font-size: 36px; margin-bottom: 20px; display: block; }
+
+  .invite-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--matcha-deep);
+    line-height: 1.05;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .invite-hosted {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--text-light);
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .invite-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .detail-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--matcha-dust);
+    border-radius: 100px;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: var(--text-mid);
+    justify-content: center;
+  }
+
+  .detail-pill .icon { font-size: 16px; }
+
+  /* ─── RSVP FORM ─── */
+  .rsvp-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--matcha-pale), transparent);
+    margin: 32px 0;
+  }
+
+  .rsvp-label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .input-group { margin-bottom: 14px; text-align: left; }
+
+  .input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-mid);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .input-field {
+    width: 100%;
+    border: 1.5px solid var(--matcha-pale);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-dark);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-field:focus { border-color: var(--matcha-soft); }
+
+  .rsvp-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .rsvp-btn {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--matcha-pale);
+    background: var(--white);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .rsvp-btn.yes { color: var(--matcha-deep); }
+  .rsvp-btn.yes:hover, .rsvp-btn.yes.selected { background: var(--matcha-dust); border-color: var(--matcha-mid); }
+  .rsvp-btn.no { color: #a05c5c; }
+  .rsvp-btn.no:hover, .rsvp-btn.no.selected { background: #fdf0f0; border-color: #d9534f; }
+
+  .form-error { color: #c0392b; font-size: 12px; margin-top: 10px; min-height: 16px; }
+
+  /* ─── DECLINE PAGE ─── */
+  #page-no {
+    align-items: center; justify-content: center; padding: 32px 24px;
+    background: linear-gradient(135deg, #fdf8f4 0%, #f5ede8 100%);
+  }
+
+  .decline-card {
+    max-width: 400px; width: 100%;
+    padding: 60px 40px;
+    text-align: center;
+  }
+
+  .decline-emoji { font-size: 56px; display: block; margin-bottom: 24px; animation: gentle-float 3s ease-in-out infinite; }
+
+  .decline-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px;
+    font-weight: 300;
+    color: var(--matcha-deep);
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+
+  .decline-msg {
+    color: var(--text-light);
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  /* ─── YES / DETAILS PAGE ─── */
+  #page-yes { padding: 32px 24px; align-items: center; }
+
+  .yes-wrapper { max-width: 560px; width: 100%; padding-bottom: 64px; }
+
+  .yes-hero {
+    padding: 40px 36px 32px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .yes-badge {
+    display: inline-block;
+    background: var(--matcha-dust);
+    color: var(--matcha-mid);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+    border: 1px solid var(--matcha-pale);
+  }
+
+  .yes-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 46px;
+    font-weight: 300;
+    color: var(--matcha-deep);
+    margin-bottom: 6px;
+  }
+
+  .yes-hosted {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--text-light);
+    margin-bottom: 28px;
+    font-weight: 300;
+  }
+
+  .yes-details-grid {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .yes-detail {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--matcha-dust);
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 14px;
+    color: var(--text-mid);
+  }
+
+  .yes-detail .icon { font-size: 18px; }
+
+  /* ─── SECTION CARDS ─── */
+  .section-card {
+    padding: 32px;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--matcha-deep);
+    margin-bottom: 6px;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  /* ─── POTLUCK SPREADSHEET ─── */
+  .potluck-sheet {
+    border: 1.5px solid var(--matcha-pale);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .sheet-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 44px;
+    background: var(--matcha-deep);
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .sheet-header span {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--matcha-cream);
+  }
+
+  .sheet-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 44px;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 8px;
+    border-bottom: 1px solid var(--matcha-dust);
+    background: var(--white);
+    transition: background 0.15s;
+  }
+
+  .sheet-row:last-child { border-bottom: none; }
+  .sheet-row.my-row { background: #fdf8ef; }
+  .sheet-row.my-row:hover { background: #faf3e3; }
+
+  .sheet-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sheet-name.me::after {
+    content: ' (you)';
+    font-weight: 400;
+    color: var(--gold);
+    font-size: 11px;
+  }
+
+  .sheet-item-text {
+    font-size: 13px;
+    color: var(--text-mid);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sheet-item-text.empty { color: var(--text-light); font-style: italic; }
+
+  .sheet-input {
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1.5px solid var(--matcha-soft);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text-dark);
+    background: var(--white);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .sheet-input:focus { border-color: var(--gold); }
+
+  .sheet-save-btn {
+    background: var(--matcha-mid);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 0;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    width: 44px;
+    transition: background 0.2s;
+  }
+  .sheet-save-btn:hover { background: var(--matcha-deep); }
+
+  .sheet-edit-btn {
+    background: transparent;
+    color: var(--matcha-mid);
+    border: 1.5px solid var(--matcha-pale);
+    border-radius: 6px;
+    padding: 5px 0;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    width: 44px;
+    transition: all 0.2s;
+  }
+  .sheet-edit-btn:hover { border-color: var(--matcha-soft); background: var(--matcha-dust); }
+
+  .sheet-empty {
+    padding: 28px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-light);
+    background: var(--white);
+  }
+
+  .add-row-area {
+    background: var(--matcha-dust);
+    border: 1.5px dashed var(--matcha-pale);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .add-row-input {
+    flex: 1;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1.5px solid var(--matcha-pale);
+    border-radius: 6px;
+    padding: 9px 12px;
+    color: var(--text-dark);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .add-row-input:focus { border-color: var(--matcha-soft); }
+
+  /* ─── POLL ─── */
+  .poll-options { display: flex; flex-direction: column; gap: 10px; }
+
+  .poll-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--matcha-pale);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .poll-option:hover { border-color: var(--matcha-soft); background: var(--matcha-dust); }
+  .poll-option.selected { border-color: var(--matcha-mid); background: #eef6ee; }
+
+  .poll-radio {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--matcha-pale);
+    transition: all 0.2s;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .poll-option.selected .poll-radio { border-color: var(--matcha-mid); background: var(--matcha-mid); }
+  .poll-option.selected .poll-radio::after {
+    content: ''; width: 6px; height: 6px;
+    border-radius: 50%; background: white;
+  }
+
+  .poll-text { font-size: 14px; color: var(--text-dark); flex: 1; }
+  .poll-emoji { font-size: 20px; }
+
+  /* ─── SUCCESS TOAST ─── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--matcha-deep); color: white;
+    padding: 14px 24px; border-radius: 100px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 32px rgba(45,74,45,0.3);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000; white-space: nowrap;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ─── ADMIN PAGE ─── */
+  #page-admin {
+    padding: 32px 24px;
+    background: #f0f4f0;
+  }
+
+  .admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap; gap: 12px;
+  }
+
+  .admin-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--matcha-deep);
+  }
+
+  .admin-tabs {
+    display: flex; gap: 4px;
+    background: var(--matcha-pale);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+
+  .admin-tab {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-mid);
+    transition: all 0.2s;
+  }
+  .admin-tab.active { background: white; color: var(--matcha-deep); box-shadow: 0 2px 8px rgba(45,74,45,0.1); }
+
+  .data-table-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  th {
+    background: var(--matcha-deep);
+    color: var(--matcha-cream);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f4f0;
+    color: var(--text-dark);
+    white-space: nowrap;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fbf8; }
+
+  .status-yes { color: var(--matcha-mid); font-weight: 500; }
+  .status-no { color: #c0392b; font-weight: 500; }
+
+  .admin-empty {
+    text-align: center;
+    color: var(--text-light);
+    padding: 40px;
+    font-size: 14px;
+  }
+
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(45,74,45,0.06);
+  }
+
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--matcha-deep);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* ─── ADMIN LOCK ─── */
+  #page-admin-lock {
+    align-items: center; justify-content: center; padding: 24px;
+    background: #f0f4f0;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 480px) {
+    .invite-card { padding: 36px 24px; }
+    .invite-title { font-size: 40px; }
+    .yes-title { font-size: 36px; }
+    .lock-card { padding: 40px 28px; }
+    .section-card { padding: 24px; }
+    .yes-hero { padding: 28px 24px 24px; }
+  }
+
+  /* ─── NAV FLOAT ─── */
+  .float-nav {
+    position: fixed; bottom: 24px; right: 24px; z-index: 100;
+  }
+
+  .float-btn {
+    background: rgba(45,74,45,0.9);
+    color: white; border: none;
+    border-radius: 100px;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(45,74,45,0.3);
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+  }
+  .float-btn:hover { background: var(--matcha-deep); transform: scale(1.03); }
+
+  /* ─── SUBMITTED STATE ─── */
+  .submitted-msg {
+    background: #eef6ee;
+    border: 1.5px solid var(--matcha-pale);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+    color: var(--matcha-mid);
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 12px;
+  }
+
+  /* ─── POTLUCK CLAIM MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(45,74,45,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 16px 64px rgba(45,74,45,0.2);
+  }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    color: var(--matcha-deep);
+    margin-bottom: 8px;
+  }
+
+  .modal-desc { font-size: 13px; color: var(--text-light); margin-bottom: 20px; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions button { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="bg-organic"></div>
+
+<!-- ══════════════════════════════════════
+     PAGE 1: PASSWORD LOCK
+══════════════════════════════════════ -->
+<div id="page-lock" class="page active">
+  <div class="lock-bg"></div>
+  <div class="lock-card">
+    <span class="lock-leaf">🍵</span>
+    <div class="lock-title">You're invited</div>
+    <div class="lock-subtitle">Private event · Enter passcode</div>
+    <input type="password" class="lock-input" id="lock-input" placeholder="enter passcode" autocomplete="off"/>
+    <div class="lock-error" id="lock-error"></div>
+    <button class="btn btn-primary" onclick="checkPassword()">Enter ✦</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 2: INVITE + RSVP
+══════════════════════════════════════ -->
+<div id="page-invite" class="page">
+  <div class="invite-wrapper">
+    <div class="invite-top-deco">
+      <div class="deco-line"></div>
+      <div class="event-chip">You're invited</div>
+      <div class="deco-line"></div>
+    </div>
+
+    <div class="invite-card card">
+      <span class="invite-emoji">🌿🍰🌿</span>
+      <div class="invite-title">Bakery Potluck</div>
+      <div class="invite-hosted">hosted by Helen & Vicki</div>
+
+      <div class="invite-details">
+        <div class="detail-pill">
+          <span class="icon">📅</span>
+          Sunday, June 7th
+        </div>
+        <div class="detail-pill">
+          <span class="icon">⏰</span>
+          11:30 AM
+        </div>
+        <div class="detail-pill">
+          <span class="icon">🍵</span>
+          Matcha-themed · Bring a treat!
+        </div>
+      </div>
+
+      <div class="rsvp-divider"></div>
+
+      <span class="rsvp-label">Will you be joining us?</span>
+
+      <div class="input-group">
+        <label>Your Name</label>
+        <input type="text" class="input-field" id="rsvp-name" placeholder="First & Last name"/>
+      </div>
+      <div class="input-group">
+        <label>Phone Number</label>
+        <input type="tel" class="input-field" id="rsvp-phone" placeholder="(555) 000-0000"/>
+      </div>
+
+      <div class="rsvp-choices">
+        <button class="rsvp-btn yes" id="btn-yes" onclick="selectRsvp('yes')">✅ Yes, I'll be there!</button>
+        <button class="rsvp-btn no" id="btn-no" onclick="selectRsvp('no')">😔 Can't make it</button>
+      </div>
+
+      <div class="form-error" id="rsvp-error"></div>
+    </div>
+  </div>
+
+  <!-- Float nav to admin -->
+  <div class="float-nav">
+    <button class="float-btn" onclick="showPage('page-admin-lock')">🔒 Admin</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 3: DECLINED — AW MISS YOU
+══════════════════════════════════════ -->
+<div id="page-no" class="page">
+  <div class="decline-card card">
+    <span class="decline-emoji">🥺</span>
+    <div class="decline-title">Aw, we'll miss you!</div>
+    <p class="decline-msg">We totally understand — life gets busy! Hope to see you at the next one. Sending you all the matcha vibes. 🍵💚</p>
+    <button class="btn btn-matcha" onclick="showPage('page-invite')">← Go back</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 4: YES — EVENT DETAILS + FORMS
+══════════════════════════════════════ -->
+<div id="page-yes" class="page">
+  <div class="yes-wrapper">
+
+    <!-- Hero -->
+    <div class="yes-hero card">
+      <div class="yes-badge">You're going! 🎉</div>
+      <div class="yes-title">Bakery Potluck</div>
+      <div class="yes-hosted">hosted by Helen & Vicki</div>
+      <div class="yes-details-grid">
+        <div class="yes-detail">
+          <span class="icon">📅</span>
+          Sunday, June 7th · 11:30 AM
+        </div>
+        <div class="yes-detail">
+          <span class="icon">📍</span>
+          Levels at Loso
+        </div>
+        <div class="yes-detail">
+          <span class="icon">🍵</span>
+          Matcha-themed dress code encouraged!
+        </div>
+        <div class="yes-detail">
+          <span class="icon">🍰</span>
+          Bring one baked good to share
+        </div>
+      </div>
+    </div>
+
+    <!-- Potluck Sign-up -->
+    <div class="section-card card">
+      <div class="section-title">🧁 Potluck Sign-up</div>
+      <p class="section-desc">Enter what you're bringing so everyone can see! You can edit your item anytime.</p>
+
+      <!-- Spreadsheet -->
+      <div class="potluck-sheet">
+        <div class="sheet-header">
+          <span>Guest</span>
+          <span>Bringing</span>
+          <span></span>
+        </div>
+        <div id="potluck-rows">
+          <div class="sheet-empty">No one has signed up yet — be the first! 🌿</div>
+        </div>
+      </div>
+
+      <!-- Add my row (shown when guest hasn't added one yet) -->
+      <div id="add-row-area" class="add-row-area" style="display:none">
+        <input class="add-row-input" id="add-row-input" placeholder="What are you bringing? e.g. Matcha cookies 🍪" maxlength="80"/>
+        <button class="sheet-save-btn" style="width:auto;padding:9px 14px;font-size:13px;" onclick="submitPotluckItem()">Add ✓</button>
+      </div>
+    </div>
+
+    <!-- Milk Poll -->
+    <div class="section-card card">
+      <div class="section-title">🥛 Milk Preferences Poll</div>
+      <p class="section-desc">Help us make sure everyone's covered! Pick what describes you best.</p>
+      <div class="poll-options" id="poll-options">
+        <div class="poll-option" onclick="selectPoll(this, 'Lactose Intolerant')">
+          <div class="poll-radio"></div>
+          <span class="poll-text">Lactose Intolerant 🚫🥛</span>
+        </div>
+        <div class="poll-option" onclick="selectPoll(this, 'Whole Milk')">
+          <div class="poll-radio"></div>
+          <span class="poll-text">Whole Milk 🐄</span>
+        </div>
+        <div class="poll-option" onclick="selectPoll(this, 'Almond Milk')">
+          <div class="poll-radio"></div>
+          <span class="poll-text">Almond Milk 🌰</span>
+        </div>
+        <div class="poll-option" onclick="selectPoll(this, 'Oat Milk')">
+          <div class="poll-radio"></div>
+          <span class="poll-text">Oat Milk 🌾</span>
+        </div>
+      </div>
+      <button class="btn btn-matcha" style="margin-top:20px; width:100%" onclick="submitPoll()">Submit Poll</button>
+      <div id="poll-submitted" style="display:none; margin-top:12px">
+        <div class="submitted-msg">✅ Poll response saved!</div>
+      </div>
+      <div class="form-error" id="poll-error"></div>
+    </div>
+
+    <!-- Notes -->
+    <div class="section-card card" style="background: linear-gradient(135deg,rgba(122,171,122,0.08),rgba(201,169,110,0.06))">
+      <div class="section-title">💌 A note from Helen & Vicki</div>
+      <p style="font-size:14px; color:var(--text-mid); line-height:1.7; font-family:'Cormorant Garamond',serif; font-size:17px; font-weight:300;">
+        We're so excited to celebrate with you! Please bring your most matcha-inspired creation, or really anything delicious — we won't judge. Can't wait to share a table with you. 🌿
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Float nav to admin -->
+  <div class="float-nav">
+    <button class="float-btn" onclick="showPage('page-admin-lock')">🔒 Admin</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 5: ADMIN LOCK
+══════════════════════════════════════ -->
+<div id="page-admin-lock" class="page">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;">
+    <div class="lock-card" style="background:white;box-shadow:0 4px 32px rgba(45,74,45,0.12);">
+      <span class="lock-leaf" style="font-size:36px;">🔐</span>
+      <div class="lock-title" style="color:var(--matcha-deep);">Admin Access</div>
+      <div class="lock-subtitle" style="color:var(--text-light);">Hosts only</div>
+      <input type="password" class="lock-input" id="admin-input"
+             style="background:var(--matcha-dust);color:var(--text-dark);border-color:var(--matcha-pale);"
+             placeholder="admin password" autocomplete="off"/>
+      <div class="lock-error" id="admin-error"></div>
+      <button class="btn btn-matcha" style="width:100%;margin-bottom:12px;" onclick="checkAdmin()">Enter Dashboard</button>
+      <button class="btn btn-outline" style="width:100%;" onclick="history.back(); showPrev()">← Go back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 6: ADMIN DASHBOARD
+══════════════════════════════════════ -->
+<div id="page-admin" class="page">
+  <div style="max-width:900px;width:100%;margin:0 auto;padding-bottom:64px;">
+    <div class="admin-header">
+      <div class="admin-title">📋 Host Dashboard</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-outline" style="font-size:13px;padding:10px 18px;" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-danger" style="font-size:13px;padding:10px 18px;" onclick="clearData()">🗑 Clear All Data</button>
+        <button class="btn btn-matcha" style="font-size:13px;padding:10px 18px;" onclick="showPage('page-invite')">← Exit</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="admin-stats" id="admin-stats"></div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('rsvps')">RSVPs</button>
+      <button class="admin-tab" onclick="switchTab('potluck')">Potluck Sign-ups</button>
+      <button class="admin-tab" onclick="switchTab('milk')">Milk Poll</button>
+    </div>
+
+    <!-- Tables -->
+    <div id="tab-rsvps" class="card data-table-wrap"></div>
+    <div id="tab-potluck" class="card data-table-wrap" style="display:none"></div>
+    <div id="tab-milk" class="card data-table-wrap" style="display:none"></div>
+  </div>
+</div>
+
+<!-- (modal removed — potluck now uses inline spreadsheet) -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Saved!</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────
+function getData() {
+  return {
+    rsvps: JSON.parse(localStorage.getItem('bp_rsvps') || '[]'),
+    potluck: JSON.parse(localStorage.getItem('bp_potluck') || '[]'),
+    milk: JSON.parse(localStorage.getItem('bp_milk') || '[]'),
+  };
+}
+
+function saveData(key, val) {
+  localStorage.setItem('bp_' + key, JSON.stringify(val));
+}
+
+// Current guest
+let currentGuest = { name: '', phone: '' };
+let selectedRsvp = null;
+let selectedPoll = null;
+
+// ─── PAGE ROUTING ────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── PASSWORD ────────────────────────────────────────────────────────
+function checkPassword() {
+  const val = document.getElementById('lock-input').value.trim().toLowerCase();
+  if (val === 'matchamadness') {
+    showPage('page-invite');
+  } else {
+    document.getElementById('lock-error').textContent = 'Incorrect passcode — try again!';
+    document.getElementById('lock-input').value = '';
+  }
+}
+document.getElementById('lock-input').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+
+// ─── RSVP ────────────────────────────────────────────────────────────
+function selectRsvp(choice) {
+  const name = document.getElementById('rsvp-name').value.trim();
+  const phone = document.getElementById('rsvp-phone').value.trim();
+  const errEl = document.getElementById('rsvp-error');
+
+  if (!name) { errEl.textContent = 'Please enter your name!'; return; }
+  if (!phone || phone.replace(/\D/g,'').length < 7) { errEl.textContent = 'Please enter a valid phone number!'; return; }
+  errEl.textContent = '';
+
+  currentGuest = { name, phone };
+
+  // Save RSVP
+  const data = getData();
+  const existing = data.rsvps.findIndex(r => r.phone === phone);
+  const entry = { name, phone, rsvp: choice, time: new Date().toLocaleString() };
+  if (existing >= 0) data.rsvps[existing] = entry;
+  else data.rsvps.push(entry);
+  saveData('rsvps', data.rsvps);
+
+  if (choice === 'no') {
+    showPage('page-no');
+  } else {
+    showPage('page-yes');
+    renderPotluck();
+    checkPollSubmitted();
+  }
+}
+
+// ─── POTLUCK SPREADSHEET ─────────────────────────────────────────────
+function renderPotluck() {
+  const { potluck } = getData();
+  const rowsEl = document.getElementById('potluck-rows');
+  const addArea = document.getElementById('add-row-area');
+
+  const myEntry = potluck.find(e => e.phone === currentGuest.phone);
+
+  // Render rows
+  if (potluck.length === 0) {
+    rowsEl.innerHTML = '<div class="sheet-empty">No one has signed up yet — be the first! 🌿</div>';
+  } else {
+    rowsEl.innerHTML = potluck.map((entry, idx) => {
+      const isMe = entry.phone === currentGuest.phone;
+      return `<div class="sheet-row${isMe ? ' my-row' : ''}" id="sheet-row-${idx}">
+        <div class="sheet-name${isMe ? ' me' : ''}">${escHtml(entry.name.split(' ')[0])}</div>
+        ${isMe
+          ? `<input class="sheet-input" id="sheet-edit-input-${idx}" value="${escHtml(entry.item)}" maxlength="80" onkeydown="if(event.key==='Enter')saveEdit(${idx})"/>`
+          : `<div class="sheet-item-text${entry.item ? '' : ' empty'}">${entry.item ? escHtml(entry.item) : 'TBD'}</div>`
+        }
+        ${isMe
+          ? `<button class="sheet-save-btn" onclick="saveEdit(${idx})">✓</button>`
+          : `<div></div>`
+        }
+      </div>`;
+    }).join('');
+  }
+
+  // Show add-area only if guest hasn't added their row yet
+  addArea.style.display = myEntry ? 'none' : 'flex';
+  if (!myEntry) {
+    document.getElementById('add-row-input').value = '';
+  }
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function submitPotluckItem() {
+  const input = document.getElementById('add-row-input');
+  const item = input.value.trim();
+  if (!item) { showToast('✏️ Enter what you\'re bringing first!'); return; }
+
+  const data = getData();
+  const existing = data.potluck.findIndex(e => e.phone === currentGuest.phone);
+  const entry = { name: currentGuest.name, phone: currentGuest.phone, item, time: new Date().toLocaleString() };
+  if (existing >= 0) data.potluck[existing] = entry;
+  else data.potluck.push(entry);
+  saveData('potluck', data.potluck);
+
+  renderPotluck();
+  showToast('🍰 You\'re on the list!');
+}
+
+function saveEdit(idx) {
+  const input = document.getElementById(`sheet-edit-input-${idx}`);
+  if (!input) return;
+  const item = input.value.trim();
+  if (!item) { showToast('✏️ Item can\'t be empty!'); return; }
+
+  const data = getData();
+  const myIdx = data.potluck.findIndex(e => e.phone === currentGuest.phone);
+  if (myIdx >= 0) {
+    data.potluck[myIdx].item = item;
+    data.potluck[myIdx].time = new Date().toLocaleString();
+    saveData('potluck', data.potluck);
+  }
+  renderPotluck();
+  showToast('✅ Updated!');
+}
+
+// ─── POLL ────────────────────────────────────────────────────────────
+function selectPoll(el, val) {
+  document.querySelectorAll('.poll-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPoll = val;
+  document.getElementById('poll-error').textContent = '';
+}
+
+function checkPollSubmitted() {
+  const { milk } = getData();
+  const mine = milk.find(m => m.phone === currentGuest.phone);
+  if (mine) {
+    document.getElementById('poll-submitted').style.display = 'block';
+    document.querySelectorAll('.poll-option').forEach(o => {
+      if (o.querySelector('.poll-text').textContent.includes(mine.preference.split(' ')[0])) o.classList.add('selected');
+    });
+  }
+}
+
+function submitPoll() {
+  if (!selectedPoll) { document.getElementById('poll-error').textContent = 'Please select an option!'; return; }
+  const data = getData();
+  const existing = data.milk.findIndex(m => m.phone === currentGuest.phone);
+  const entry = { name: currentGuest.name, phone: currentGuest.phone, preference: selectedPoll, time: new Date().toLocaleString() };
+  if (existing >= 0) data.milk[existing] = entry;
+  else data.milk.push(entry);
+  saveData('milk', data.milk);
+  document.getElementById('poll-submitted').style.display = 'block';
+  document.getElementById('poll-error').textContent = '';
+  showToast('🥛 Poll saved!');
+}
+
+// ─── ADMIN ───────────────────────────────────────────────────────────
+function checkAdmin() {
+  const val = document.getElementById('admin-input').value.trim().toLowerCase();
+  if (val === 'vickihelen') {
+    document.getElementById('admin-input').value = '';
+    showPage('page-admin');
+    renderAdmin();
+  } else {
+    document.getElementById('admin-error').textContent = 'Incorrect password!';
+    document.getElementById('admin-input').value = '';
+  }
+}
+document.getElementById('admin-input').addEventListener('keydown', e => { if (e.key === 'Enter') checkAdmin(); });
+
+function showPrev() {
+  showPage('page-invite');
+}
+
+let currentAdminTab = 'rsvps';
+
+function switchTab(tab) {
+  currentAdminTab = tab;
+  document.querySelectorAll('.admin-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['rsvps','potluck','milk'][i] === tab);
+  });
+  document.getElementById('tab-rsvps').style.display = tab === 'rsvps' ? 'block' : 'none';
+  document.getElementById('tab-potluck').style.display = tab === 'potluck' ? 'block' : 'none';
+  document.getElementById('tab-milk').style.display = tab === 'milk' ? 'block' : 'none';
+}
+
+function renderAdmin() {
+  const { rsvps, potluck, milk } = getData();
+
+  // Stats
+  const yesCount = rsvps.filter(r => r.rsvp === 'yes').length;
+  const noCount = rsvps.filter(r => r.rsvp === 'no').length;
+  const potluckCount = potluck.length;
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${rsvps.length}</div><div class="stat-label">Total RSVPs</div></div>
+    <div class="stat-card"><div class="stat-num">${yesCount}</div><div class="stat-label">Coming 🎉</div></div>
+    <div class="stat-card"><div class="stat-num">${noCount}</div><div class="stat-label">Can't make it</div></div>
+    <div class="stat-card"><div class="stat-num">${potluckCount}</div><div class="stat-label">Dishes Claimed</div></div>
+    <div class="stat-card"><div class="stat-num">${milk.length}</div><div class="stat-label">Poll Responses</div></div>
+  `;
+
+  // RSVP Tab
+  if (rsvps.length === 0) {
+    document.getElementById('tab-rsvps').innerHTML = '<div class="admin-empty">No RSVPs yet!</div>';
+  } else {
+    document.getElementById('tab-rsvps').innerHTML = `<table>
+      <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>RSVP</th><th>Potluck Dish</th><th>Milk Pref</th><th>Submitted</th></tr></thead>
+      <tbody>${rsvps.map((r, i) => {
+        const myDish = potluck.find(e => e.phone === r.phone);
+        const dishName = myDish ? myDish.item : '—';
+        const milkEntry = milk.find(m => m.phone === r.phone);
+        const milkPref = milkEntry ? milkEntry.preference : '—';
+        return `<tr>
+          <td>${i+1}</td>
+          <td><strong>${r.name}</strong></td>
+          <td>${r.phone}</td>
+          <td class="${r.rsvp === 'yes' ? 'status-yes' : 'status-no'}">${r.rsvp === 'yes' ? '✅ Yes' : '❌ No'}</td>
+          <td>${dishName}</td>
+          <td>${milkPref}</td>
+          <td style="color:var(--text-light);font-size:12px">${r.time}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
+
+  // Potluck Tab
+  if (potluck.length === 0) {
+    document.getElementById('tab-potluck').innerHTML = '<div class="admin-empty">No potluck sign-ups yet!</div>';
+  } else {
+    const potluckRows = potluck.map((entry, i) =>
+      `<tr>
+        <td>${i+1}</td>
+        <td><strong>${entry.name}</strong></td>
+        <td>${entry.phone}</td>
+        <td>${entry.item || '—'}</td>
+        <td style="color:var(--text-light);font-size:12px">${entry.time}</td>
+      </tr>`
+    ).join('');
+    document.getElementById('tab-potluck').innerHTML = `<table>
+      <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Bringing</th><th>Submitted</th></tr></thead>
+      <tbody>${potluckRows}</tbody>
+    </table>`;
+  }
+
+  // Milk Tab
+  const milkCounts = {};
+  milk.forEach(m => { milkCounts[m.preference] = (milkCounts[m.preference] || 0) + 1; });
+  const milkSummaryRows = Object.entries(milkCounts).map(([pref, count]) =>
+    `<tr><td><strong>${pref}</strong></td><td>${count}</td><td>${Math.round(count / Math.max(milk.length,1) * 100)}%</td></tr>`
+  ).join('');
+  const milkDetailRows = milk.map((m, i) =>
+    `<tr><td>${i+1}</td><td>${m.name}</td><td>${m.phone}</td><td>${m.preference}</td><td style="color:var(--text-light);font-size:12px">${m.time}</td></tr>`
+  ).join('');
+  document.getElementById('tab-milk').innerHTML = `
+    <table style="margin-bottom:2px">
+      <thead><tr><th>Milk Preference</th><th>Count</th><th>%</th></tr></thead>
+      <tbody>${milkSummaryRows || '<tr><td colspan="3" style="text-align:center;color:var(--text-light)">No responses yet</td></tr>'}</tbody>
+    </table>
+    <div style="padding:16px;font-size:12px;color:var(--text-light);letter-spacing:1px;text-transform:uppercase">Individual Responses</div>
+    <table>
+      <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Preference</th><th>Submitted</th></tr></thead>
+      <tbody>${milkDetailRows || '<tr><td colspan="5" style="text-align:center;color:var(--text-light)">No responses yet</td></tr>'}</tbody>
+    </table>`;
+}
+
+// ─── EXPORT CSV ──────────────────────────────────────────────────────
+function exportCSV() {
+  const { rsvps, potluck, milk } = getData();
+  let csv = '';
+
+  csv += 'RSVP LIST\n';
+  csv += 'Name,Phone,RSVP,Potluck Dish,Milk Preference,Time\n';
+  rsvps.forEach(r => {
+    const myDish = potluck.find(e => e.phone === r.phone);
+    const dishName = myDish ? myDish.item : '';
+    const milkEntry = milk.find(m => m.phone === r.phone);
+    csv += `"${r.name}","${r.phone}","${r.rsvp}","${dishName}","${milkEntry?.preference ?? ''}","${r.time}"\n`;
+  });
+
+  csv += '\nPOTLUCK SIGN-UPS\n';
+  csv += 'Name,Phone,Bringing,Time\n';
+  potluck.forEach(e => {
+    csv += `"${e.name}","${e.phone}","${e.item}","${e.time}"\n`;
+  });
+
+  csv += '\nMILK POLL\n';
+  csv += 'Name,Phone,Preference,Time\n';
+  milk.forEach(m => { csv += `"${m.name}","${m.phone}","${m.preference}","${m.time}"\n`; });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'bakery-potluck-data.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 CSV exported!');
+}
+
+function clearData() {
+  if (!confirm('Clear ALL RSVP, potluck, and poll data? This cannot be undone.')) return;
+  localStorage.removeItem('bp_rsvps');
+  localStorage.removeItem('bp_potluck');
+  localStorage.removeItem('bp_milk');
+  renderAdmin();
+  showToast('🗑 Data cleared');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── KEYBOARD ENTER ON ADMIN ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const ap = document.getElementById('page-admin-lock');
+    if (ap.classList.contains('active')) checkAdmin();
+  }
+});
+
+document.getElementById('add-row-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitPotluckItem();
+});
+</script>
+</body>
+</html>
