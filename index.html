@@ -937,15 +937,19 @@
         </div>
         <div class="yes-detail">
           <span class="icon">📍</span>
-          Levels at Loso
+          Levels at Loso, street parking available
         </div>
         <div class="yes-detail">
           <span class="icon">🍵</span>
-          Matcha-themed dress code encouraged!
+          Summer-color dress code encouraged
         </div>
         <div class="yes-detail">
           <span class="icon">🍰</span>
           Bring one baked good to share
+        </div>
+        <div class="yes-detail">
+          <span class="icon">👤</span>
+          Attendee count so far: <span id="attendee-count">…</span>
         </div>
       </div>
       <button class="btn btn-outline" style="width:100%;margin-top:20px;font-size:13px;" onclick="changeRsvp()">✏️ Change my RSVP</button>
@@ -1196,6 +1200,7 @@ async function selectRsvp(choice) {
     showPage('page-yes');
     await renderPotluck();
     await checkPollSubmitted();
+    await renderAttendeeCount();
   }
 }
 
@@ -1206,6 +1211,20 @@ function changeRsvp() {
     document.getElementById('rsvp-phone').value = currentGuest.phone;
   }
   showPage('page-invite');
+}
+
+// ─── ATTENDEE COUNT ──────────────────────────────────────────────────
+async function renderAttendeeCount() {
+  const el = document.getElementById('attendee-count');
+  el.textContent = '…';
+  try {
+    const { rsvps } = await getData();
+    const yesCount = rsvps.filter(r => r.rsvp === 'yes').length;
+    el.textContent = yesCount;
+  } catch (err) {
+    el.textContent = '—';
+    console.error(err);
+  }
 }
 
 // ─── POTLUCK SPREADSHEET ─────────────────────────────────────────────
